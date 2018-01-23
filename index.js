@@ -5,7 +5,8 @@ const MongoClient = require('mongodb').MongoClient
 const ObjectID = require('mongodb').ObjectID;
 
 var db;
-
+const dbuser = 'sb_user';
+const dbpassword = 's%3BXjAL%7B3E%5B8!Nn';
 app.use(bodyParser.urlencoded({
     extended: true
 }));
@@ -20,7 +21,7 @@ app.use(function(req, res, next) {
 });
 
 // connect DB
-MongoClient.connect('mongodb://localhost', {
+MongoClient.connect('mongodb://' + dbuser + ':'+ dbpassword + '@ds013966.mlab.com:13966/rwd-test', {
   uri_decode_auth: true,
   native_parser: true
 }, (err, newDB) => {
