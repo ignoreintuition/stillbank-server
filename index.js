@@ -26,7 +26,7 @@ MongoClient.connect('mongodb://' + dbuser + ':'+ dbpassword + '@ds013966.mlab.co
   native_parser: true
 }, (err, newDB) => {
   if (err) console.log(err);
-  db = newDB.db('stilbank')
+  db = newDB.db('rwd-test')
   app.listen(3000, function() {
     console.log("listening on 3000");
   });
@@ -34,12 +34,13 @@ MongoClient.connect('mongodb://' + dbuser + ':'+ dbpassword + '@ds013966.mlab.co
 
 // get transactions
 app.get('/getTrans/:id', (req, res) => {
+  console.log(req.params.id)
   db.collection('sb_transactions').find({
     "accountID": req.params.id
   }).toArray(function(err, results) {
-    results.sort(function (a, b) {
-       return new Date(b.date) - new Date(a.date);
-    });
+    // results.sort(function (a, b) {
+    //    return new Date(b.date) - new Date(a.date);
+    // });
     res.send(results);
   });
 });
