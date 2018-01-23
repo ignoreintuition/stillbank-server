@@ -27,7 +27,7 @@ MongoClient.connect('mongodb://' + dbuser + ':'+ dbpassword + '@ds013966.mlab.co
 }, (err, newDB) => {
   if (err) console.log(err);
   db = newDB.db('rwd-test')
-  app.listen(3000, function() {
+  app.listen(process.env.PORT || 3000, function() {
     console.log("listening on 3000");
   });
 });
