@@ -5,8 +5,8 @@ const MongoClient = require('mongodb').MongoClient
 const ObjectID = require('mongodb').ObjectID;
 
 var db;
-const dbuser = 'sb_user';
-const dbpassword = 's%3BXjAL%7B3E%5B8!Nn';
+const dbuser = '';
+const dbpassword = '';
 app.use(bodyParser.urlencoded({
     extended: true
 }));
@@ -21,14 +21,14 @@ app.use(function(req, res, next) {
 });
 
 // connect DB
-MongoClient.connect('mongodb://' + dbuser + ':'+ dbpassword + '@ds013966.mlab.com:13966/rwd-test', {
+MongoClient.connect(process.env.MONGO_STILLBANK_URI || 'mongodb://localhost', {
   uri_decode_auth: true,
   native_parser: true
 }, (err, newDB) => {
   if (err) console.log(err);
   db = newDB.db('rwd-test')
   app.listen(process.env.PORT || 3000, function() {
-    console.log("listening on 3000");
+    console.log("listening");
   });
 });
 
