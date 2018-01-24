@@ -26,7 +26,7 @@ MongoClient.connect(process.env.MONGO_STILLBANK_URI || 'mongodb://localhost', {
   native_parser: true
 }, (err, newDB) => {
   if (err) console.log(err);
-  db = newDB.db('rwd-test')
+  db = newDB.db(process.env.DB_NAME || 'stillbank')
   app.listen(process.env.PORT || 3000, function() {
     console.log("listening");
   });
