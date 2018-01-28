@@ -3,14 +3,15 @@ const bodyParser = require('body-parser');
 const app = express();
 const MongoClient = require('mongodb').MongoClient
 const ObjectID = require('mongodb').ObjectID;
+const Passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
 
 var db;
-const dbuser = '';
-const dbpassword = '';
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 
+app.use(Passport.initialize());
 app.use(bodyParser.json());
 
 app.use(function(req, res, next) {
@@ -32,9 +33,23 @@ MongoClient.connect(process.env.MONGO_STILLBANK_URI || 'mongodb://localhost', {
   });
 });
 
+Passport.serializeUser(function(user, done) {
+  done(null, user._id);
+});
+
+Passport.use(new LocalStrategy(
+  function(username, password, done) {
+    db.collection('sb_accounts').findOne({"accountID": username}, function(err, user) {
+      if (err) {
+        return done(err);
+      }
+      return done(null, user);
+    })
+  }
+));
+
 // get transactions
 app.get('/getTrans/:id', (req, res) => {
-  console.log(req.params.id)
   db.collection('sb_transactions').find({
     "accountID": req.params.id
   }).toArray(function(err, results) {
@@ -89,3 +104,9 @@ app.post('/updateTrans/:id', (req, res) => {
     comment: req.body.comment
   });
 });
+
+app.post('/login',
+  Passport.authenticate('local', { session: false }),
+  function(req, res) {
+    res.json({ message: "logged in" });
+  });
