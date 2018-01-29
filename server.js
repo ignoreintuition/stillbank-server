@@ -33,6 +33,7 @@ MongoClient.connect(process.env.MONGO_STILLBANK_URI || 'mongodb://localhost', {
   });
 });
 
+// Serialize User
 Passport.serializeUser(function(user, done) {
   done(null, user._id);
 });
@@ -53,9 +54,9 @@ app.get('/getTrans/:id', (req, res) => {
   db.collection('sb_transactions').find({
     "accountID": req.params.id
   }).toArray(function(err, results) {
-    // results.sort(function (a, b) {
-    //    return new Date(b.date) - new Date(a.date);
-    // });
+    results.sort(function (a, b) {
+       return new Date(b.date) - new Date(a.date);
+    });
     res.send(results);
   });
 });
@@ -69,7 +70,16 @@ app.get('/acct/:id', (req, res) => {
   });
 });
 
-//Add new transaction
+// get account info
+app.get('/adminAcct/:id', (req, res) => {
+  db.collection('sb_accounts').find({
+    "masterAccountID": req.params.id
+  }).toArray(function(err, results) {
+    res.send(results);
+  });
+});
+
+// Add new transaction
 app.post('/', (req, res) => {
   db.collection('sb_transactions').insertOne(req.body, function(err, resp) {
     if (err) {
@@ -105,8 +115,9 @@ app.post('/updateTrans/:id', (req, res) => {
   });
 });
 
+// Login
 app.post('/login',
-  Passport.authenticate('local', { session: false }),
+  Passport.authenticate('local', { session: true }),
   function(req, res) {
-    res.json({ message: "logged in" });
+    res.json(req.user);
   });
