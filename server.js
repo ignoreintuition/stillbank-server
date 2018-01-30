@@ -85,6 +85,7 @@ app.post('/', (req, res) => {
     if (err) {
       console.log('Error occurred while inserting');
     } else {
+      updateTotal(req.body.accountID);
       console.log('inserted record', resp.ops[0]);
     }
   })
@@ -121,3 +122,17 @@ app.post('/login',
   function(req, res) {
     res.json(req.user);
   });
+
+function updateTotal(accountID){
+  db.collection('sb_transactions').find({
+    "accountID": accountID
+  }).toArray(function(err, results){
+    var v = results.reduce(function(a, b){
+      var c = (b.type == "credit") ? -1 * b.amount : 1 * b.amount;
+      return a + c;
+    }, 0 )
+    db.collection('sb_accounts').update({
+      "accountID": accountID
+    }, {'$set': {'total': v}});
+  });
+}
