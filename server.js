@@ -40,11 +40,17 @@ Passport.serializeUser(function(user, done) {
 
 Passport.use(new LocalStrategy(
   function(username, password, done) {
-    db.collection('sb_accounts').findOne({"accountID": username}, function(err, user) {
+    db.collection('sb_accounts').findOne({"login": username}, function(err, user, info) {
       if (err) {
         return done(err);
       }
-      return done(null, user);
+      if (user && user.password == password){
+        delete user.password;
+        return done(null, user);
+      }
+      else {
+        return done(null, false, { message: 'failed' })
+      }
     })
   }
 ));
@@ -117,12 +123,30 @@ app.post('/updateTrans/:id', (req, res) => {
 });
 
 // Login
-app.post('/login',
-  Passport.authenticate('local', { session: true }),
-  function(req, res) {
-    res.json(req.user);
-  });
+// app.post('/login',
+//   Passport.authenticate('local', { session: false }),
+//   function(req, res) {
+//     res.json(req.user);
+//   });
 
+app.post('/login', function(req, res, next) {
+  Passport.authenticate('local', {session: false}, function(err, user, info) {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.json(info);
+    }
+    req.logIn(user, function(err) {
+      if (err) {
+        return next(err);
+      }
+      return res.json(user);
+    });
+  })(req, res, next);
+});
+
+// Helper functions
 function updateTotal(accountID){
   db.collection('sb_transactions').find({
     "accountID": accountID
