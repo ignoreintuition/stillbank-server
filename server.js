@@ -106,6 +106,7 @@ app.delete('/deleteTrans/:id', (req, res) => {
        res.send({'error':'An error has occurred'});
      } else {
        res.send('Transaction ' + id + ' deleted!');
+       updateTotal(req.body.accountID);
      }
    });
 });
@@ -118,8 +119,10 @@ app.post('/updateTrans/:id', (req, res) => {
     type:req.body.type,
     amount: req.body.amount,
     accountID: req.body.accountID,
+    category: req.body.category,
     comment: req.body.comment
   });
+  updateTotal(req.body.accountID);
 });
 
 // Login
