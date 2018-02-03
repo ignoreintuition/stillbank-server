@@ -38,6 +38,7 @@ Passport.serializeUser(function(user, done) {
   done(null, user._id);
 });
 
+// Build passort strategy
 Passport.use(new LocalStrategy(
   function(username, password, done) {
     db.collection('sb_accounts').findOne({"login": username}, function(err, user, info) {
@@ -69,6 +70,7 @@ app.get('/getTrans/:id', (req, res) => {
 
 // get account info
 app.get('/acct/:id', (req, res) => {
+  updateTotal(req.params.id);
   db.collection('sb_accounts').find({
     "accountID": req.params.id
   }).toArray(function(err, results) {
@@ -76,7 +78,7 @@ app.get('/acct/:id', (req, res) => {
   });
 });
 
-// get account info
+// get admin account info
 app.get('/adminAcct/:id', (req, res) => {
   db.collection('sb_accounts').find({
     "masterAccountID": req.params.id
@@ -91,8 +93,7 @@ app.post('/', (req, res) => {
     if (err) {
       console.log('Error occurred while inserting');
     } else {
-      updateTotal(req.body.accountID);
-      console.log('inserted record', resp.ops[0]);
+      res.send('Transaction inserted!');
     }
   })
 });
@@ -106,7 +107,6 @@ app.delete('/deleteTrans/:id', (req, res) => {
        res.send({'error':'An error has occurred'});
      } else {
        res.send('Transaction ' + id + ' deleted!');
-       updateTotal(req.body.accountID);
      }
    });
 });
@@ -122,7 +122,6 @@ app.post('/updateTrans/:id', (req, res) => {
     category: req.body.category,
     comment: req.body.comment
   });
-  updateTotal(req.body.accountID);
 });
 
 // Login
@@ -158,6 +157,7 @@ function updateTotal(accountID){
       var c = (b.type == "credit") ? -1 * b.amount : 1 * b.amount;
       return a + c;
     }, 0 )
+
     db.collection('sb_accounts').update({
       "accountID": accountID
     }, {'$set': {'total': v}});
