@@ -98,6 +98,17 @@ app.post('/', (req, res) => {
   })
 });
 
+// Add new account
+app.post('/addAcct/', (req, res) => {
+  db.collection('sb_accounts').insertOne(req.body, function(err, resp) {
+    if (err) {
+      console.log('Error occurred while inserting');
+    } else {
+      res.send('Account inserted!');
+    }
+  })
+});
+
 // Delete transactions
 app.delete('/deleteTrans/:id', (req, res) => {
   const id = req.params.id;
