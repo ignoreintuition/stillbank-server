@@ -109,6 +109,19 @@ app.post('/addAcct/', (req, res) => {
   })
 });
 
+// Delete account
+app.post('/deleteAcct/:id', (req, res) => {
+  const id = req.params.id;
+  const details = { '_id': new ObjectID(id) };
+  db.collection('sb_accounts').remove(details, (err, item) => {
+     if (err) {
+       res.send({'error':'An error has occurred'});
+     } else {
+       res.send('Account ' + id + ' deleted!');
+     }
+   });
+});
+
 // Delete transactions
 app.delete('/deleteTrans/:id', (req, res) => {
   const id = req.params.id;
