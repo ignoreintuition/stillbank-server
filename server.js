@@ -100,17 +100,18 @@ app.post('/', (req, res) => {
 
 // Add new account
 app.post('/addAcct/', (req, res) => {
-  db.collection('sb_accounts').insertOne(req.body, function(err, resp) {
+  db.collection('sb_accounts').insertOne(req.body, function(err, document) {
     if (err) {
       console.log('Error occurred while inserting');
     } else {
-      res.send('Account inserted!');
+      db.collection('sb_accounts').update({"_id": document.ops[0]._id}, {'$set': {'accountID': document.ops[0]._id}})
+      res.send(document.ops[0]._id);
     }
   })
 });
 
 // Delete account
-app.post('/deleteAcct/:id', (req, res) => {
+app.delete('/deleteAcct/:id', (req, res) => {
   const id = req.params.id;
   const details = { '_id': new ObjectID(id) };
   db.collection('sb_accounts').remove(details, (err, item) => {
