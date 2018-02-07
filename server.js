@@ -41,7 +41,7 @@ Passport.serializeUser(function(user, done) {
 // Build passort strategy
 Passport.use(new LocalStrategy(
   function(username, password, done) {
-    db.collection('sb_accounts').findOne({"login": username}, function(err, user, info) {
+    db.collection('sb_accounts').findOne({"login": username.toLowerCase()}, function(err, user, info) {
       if (err) {
         return done(err);
       }
@@ -83,6 +83,13 @@ app.get('/adminAcct/:id', (req, res) => {
   db.collection('sb_accounts').find({
     "masterAccountID": req.params.id
   }).toArray(function(err, results) {
+    results.forEach(function(d) {
+      updateTotal(d.accountID);
+    });
+  });
+  db.collection('sb_accounts').find({
+    "masterAccountID": req.params.id
+  }).toArray(function(err, results) {
     res.send(results);
   });
 });
@@ -104,7 +111,9 @@ app.post('/addAcct/', (req, res) => {
     if (err) {
       console.log('Error occurred while inserting');
     } else {
-      db.collection('sb_accounts').update({"_id": document.ops[0]._id}, {'$set': {'accountID': document.ops[0]._id}})
+      db.collection('sb_accounts').update(
+        {"_id": document.ops[0]._id},
+        {'$set': {'accountID': document.ops[0]._id.toString()}})
       res.send(document.ops[0]._id);
     }
   })
