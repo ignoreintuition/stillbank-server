@@ -196,7 +196,7 @@ function updateTotal(accountID){
       }, 0 )
       db.collection('sb_accounts').update({
         "accountID": accountID
-      }, {'$set': {'total': v + item.startBal}});
+      }, {'$set': {'total': v.toNumber() + item.startBal.toNumber()}});
     });
   });
 }
