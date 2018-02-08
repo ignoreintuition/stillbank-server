@@ -184,16 +184,20 @@ app.post('/login', function(req, res, next) {
 
 // Helper functions
 function updateTotal(accountID){
-  db.collection('sb_transactions').find({
+  db.collection('sb_accounts').findOne({
     "accountID": accountID
-  }).toArray(function(err, results){
-    var v = results.reduce(function(a, b){
-      var c = (b.type == "credit") ? -1 * b.amount : 1 * b.amount;
-      return a + c;
-    }, 0 )
-
-    db.collection('sb_accounts').update({
+  }, (err, item) => {
+    db.collection('sb_transactions').find({
       "accountID": accountID
-    }, {'$set': {'total': v}});
+    }).toArray(function(err, results){
+      var v = results.reduce(function(a, b){
+        var c = (b.type == "credit") ? -1 * b.amount : 1 * b.amount;
+        return a + c;
+      }, 0 )
+      console.log(item);
+      db.collection('sb_accounts').update({
+        "accountID": accountID
+      }, {'$set': {'total': v + item.startBal}});
+    });
   });
 }
