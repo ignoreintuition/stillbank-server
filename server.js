@@ -194,7 +194,6 @@ function updateTotal(accountID){
         var c = (b.type == "credit") ? -1 * b.amount : 1 * b.amount;
         return a + c;
       }, 0 )
-      console.log(item);
       db.collection('sb_accounts').update({
         "accountID": accountID
       }, {'$set': {'total': v + item.startBal}});
