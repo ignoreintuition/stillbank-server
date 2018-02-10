@@ -5,7 +5,7 @@ const MongoClient = require('mongodb').MongoClient
 const ObjectID = require('mongodb').ObjectID;
 const Passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-
+const passwordHash = require('password-hash');
 var db;
 app.use(bodyParser.urlencoded({
     extended: true
@@ -107,6 +107,7 @@ app.post('/', (req, res) => {
 
 // Add new account
 app.post('/addAcct/', (req, res) => {
+  req.body.password = passwordHash.generate(req.body.password);
   db.collection('sb_accounts').insertOne(req.body, function(err, document) {
     if (err) {
       console.log('Error occurred while inserting');
