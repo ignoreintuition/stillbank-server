@@ -8,7 +8,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const passwordHash = require('password-hash');
 var db;
 app.use(bodyParser.urlencoded({
-    extended: true
+  extended: true
 }));
 
 app.use(Passport.initialize());
@@ -41,16 +41,19 @@ Passport.serializeUser(function(user, done) {
 // Build passort strategy
 Passport.use(new LocalStrategy(
   function(username, password, done) {
-    db.collection('sb_accounts').findOne({"login": username.toLowerCase()}, function(err, user, info) {
+    db.collection('sb_accounts').findOne({
+      "login": username.toLowerCase()
+    }, function(err, user, info) {
       if (err) {
         return done(err);
       }
-      if (user && user.password == password){
+      if (user && passwordHash.verify(password, user.password)) {
         delete user.password;
         return done(null, user);
-      }
-      else {
-        return done(null, false, { message: 'failed' })
+      } else {
+        return done(null, false, {
+          message: 'failed'
+        })
       }
     })
   }
@@ -61,8 +64,8 @@ app.get('/getTrans/:id', (req, res) => {
   db.collection('sb_transactions').find({
     "accountID": req.params.id
   }).toArray(function(err, results) {
-    results.sort(function (a, b) {
-       return new Date(b.date) - new Date(a.date);
+    results.sort(function(a, b) {
+      return new Date(b.date) - new Date(a.date);
     });
     res.send(results);
   });
@@ -107,51 +110,77 @@ app.post('/', (req, res) => {
 
 // Add new account
 app.post('/addAcct/', (req, res) => {
-  req.body.password = passwordHash.generate(req.body.password);
-  db.collection('sb_accounts').insertOne(req.body, function(err, document) {
-    if (err) {
-      console.log('Error occurred while inserting');
-    } else {
-      db.collection('sb_accounts').update(
-        {"_id": document.ops[0]._id},
-        {'$set': {'accountID': document.ops[0]._id.toString()}})
-      res.send(document.ops[0]._id);
+  db.collection('sb_accounts').findOne({
+    "login": req.body.login
+  }, (err, item) => {
+    if (item)
+      res.send({
+        'error': 1001
+      });
+    else {
+      req.body.password = passwordHash.generate(req.body.password);
+      db.collection('sb_accounts').insertOne(req.body, function(err, document) {
+        if (err) {
+          console.log('Error occurred while inserting');
+        } else {
+          db.collection('sb_accounts').update({
+            "_id": document.ops[0]._id
+          }, {
+            '$set': {
+              'accountID': document.ops[0]._id.toString()
+            }
+          })
+          res.send(document.ops[0]._id);
+        }
+      })
     }
+
   })
+
 });
 
 // Delete account
 app.delete('/deleteAcct/:id', (req, res) => {
   const id = req.params.id;
-  const details = { '_id': new ObjectID(id) };
+  const details = {
+    '_id': new ObjectID(id)
+  };
   db.collection('sb_accounts').remove(details, (err, item) => {
-     if (err) {
-       res.send({'error':'An error has occurred'});
-     } else {
-       res.send('Account ' + id + ' deleted!');
-     }
-   });
+    if (err) {
+      res.send({
+        'error': 'An error has occurred'
+      });
+    } else {
+      res.send('Account ' + id + ' deleted!');
+    }
+  });
 });
 
 // Delete transactions
 app.delete('/deleteTrans/:id', (req, res) => {
   const id = req.params.id;
-  const details = { '_id': new ObjectID(id) };
+  const details = {
+    '_id': new ObjectID(id)
+  };
   db.collection('sb_transactions').remove(details, (err, item) => {
-     if (err) {
-       res.send({'error':'An error has occurred'});
-     } else {
-       res.send('Transaction ' + id + ' deleted!');
-     }
-   });
+    if (err) {
+      res.send({
+        'error': 'An error has occurred'
+      });
+    } else {
+      res.send('Transaction ' + id + ' deleted!');
+    }
+  });
 });
 
 // Update transactions
 app.post('/updateTrans/:id', (req, res) => {
-  const details = { '_id': new ObjectID(req.params.id) };
+  const details = {
+    '_id': new ObjectID(req.params.id)
+  };
   db.collection('sb_transactions').update(details, {
-    date:req.body.date,
-    type:req.body.type,
+    date: req.body.date,
+    type: req.body.type,
     amount: req.body.amount,
     accountID: req.body.accountID,
     category: req.body.category,
@@ -159,15 +188,10 @@ app.post('/updateTrans/:id', (req, res) => {
   });
 });
 
-// Login
-// app.post('/login',
-//   Passport.authenticate('local', { session: false }),
-//   function(req, res) {
-//     res.json(req.user);
-//   });
-
 app.post('/login', function(req, res, next) {
-  Passport.authenticate('local', {session: false}, function(err, user, info) {
+  Passport.authenticate('local', {
+    session: false
+  }, function(err, user, info) {
     if (err) {
       return next(err);
     }
@@ -184,21 +208,25 @@ app.post('/login', function(req, res, next) {
 });
 
 // Helper functions
-function updateTotal(accountID){
+function updateTotal(accountID) {
   db.collection('sb_accounts').findOne({
     "accountID": accountID
   }, (err, item) => {
     db.collection('sb_transactions').find({
       "accountID": accountID
-    }).toArray(function(err, results){
-      var v = results.reduce(function(a, b){
+    }).toArray(function(err, results) {
+      var v = results.reduce(function(a, b) {
         var c = (b.type == "credit") ? -1 * b.amount : 1 * b.amount;
         return a + c;
-      }, 0 )
+      }, 0)
       const total = +v + +item.startBal;
       db.collection('sb_accounts').update({
         "accountID": accountID
-      }, {'$set': {'total': total}});
+      }, {
+        '$set': {
+          'total': total
+        }
+      });
     });
   });
 }
