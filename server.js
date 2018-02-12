@@ -99,11 +99,11 @@ app.get('/adminAcct/:id', (req, res) => {
 
 // Add new transaction
 app.post('/', (req, res) => {
-  db.collection('sb_transactions').insertOne(req.body, function(err, resp) {
+  db.collection('sb_transactions').insertOne(req.body, function(err, response) {
     if (err) {
       console.log('Error occurred while inserting');
     } else {
-      res.send('Transaction inserted!');
+      res.send(response.ops[0]);
     }
   })
 });
