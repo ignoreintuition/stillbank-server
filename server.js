@@ -188,6 +188,18 @@ app.post('/updateTrans/:id', (req, res) => {
   });
 });
 
+// Update password
+app.post('/updatePassword/:id', (req, res) => {
+  req.body.password = passwordHash.generate(req.body.password);
+  const details = {
+    '_id': new ObjectID(req.params.id)
+  };
+  db.collection('sb_accounts').update(details, {
+    '$set': {
+      'password': req.body.password
+    }
+  })});
+
 app.post('/login', function(req, res, next) {
   Passport.authenticate('local', {
     session: false
