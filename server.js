@@ -129,14 +129,42 @@ app.post('/addAcct/', (req, res) => {
             '$set': {
               'accountID': document.ops[0]._id.toString()
             }
-          })
+          });
           res.send(document.ops[0]._id);
         }
       })
     }
-
   })
+});
 
+// Add new master account
+app.post('/addMasterAcct/', (req, res) => {
+  db.collection('sb_accounts').findOne({
+    "login": req.body.login
+  }, (err, item) => {
+    if (item)
+      res.send({
+        'error': 1001
+      });
+    else {
+      req.body.password = passwordHash.generate(req.body.password);
+      db.collection('sb_accounts').insertOne(req.body, function(err, document) {
+        if (err) {
+          console.log('Error occurred while inserting');
+        } else {
+          db.collection('sb_accounts').update({
+            "_id": document.ops[0]._id
+          }, {
+            '$set': {
+              'accountID': document.ops[0]._id.toString(),
+              'masterAccountID': document.ops[0]._id.toString(),
+            }
+          });
+          res.send(document.ops[0]._id);
+        }
+      })
+    }
+  })
 });
 
 // Delete account
@@ -198,7 +226,9 @@ app.post('/updatePassword/:id', (req, res) => {
     '$set': {
       'password': req.body.password
     }
-  })});
+  });
+  res.send('password updated');
+});
 
 app.post('/login', function(req, res, next) {
   Passport.authenticate('local', {
