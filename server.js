@@ -25,7 +25,6 @@ app.use(function(req, res, next) {
 
 // connect DB
 MongoClient.connect(process.env.MONGO_STILLBANK_URI || 'mongodb://localhost', {
-  uri_decode_auth: true,
   native_parser: true
 }, (err, newDB) => {
   if (err) console.log(err);
